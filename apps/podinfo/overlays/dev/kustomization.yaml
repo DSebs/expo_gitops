@@ -1,5 +1,8 @@
 namespace: dev
-bases:
+resources:
   - ../../base
+  - ingress.yaml
 patchesStrategicMerge:
   - patch-replicas.yaml
+
+
