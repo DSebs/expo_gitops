@@ -2,6 +2,8 @@ namespace: dev
 resources:
   - ../../base
   - ingress.yaml
+  - postgres_stateful.yaml
+  - sealedsecret.yaml  
 patchesStrategicMerge:
   - patch-replicas.yaml
 
