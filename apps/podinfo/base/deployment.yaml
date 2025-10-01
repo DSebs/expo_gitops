@@ -18,7 +18,7 @@ spec:
         - name: springboot-app
           image: scard1/servidor3dae:latest   
           ports:
-            - containerPort: 8080           
+            - containerPort: 8090        
           env:
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:postgresql://postgres:5432/paquetesdb"
