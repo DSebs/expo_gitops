@@ -3,7 +3,7 @@ namespace: qa
 resources:
   - ../../base
   - ingress.yaml
-  - postgres_stateful.yaml
+  - db_stateful.yaml
   - sealedsecret-qa.yaml
 patchesStrategicMerge:
   - patch-replicas.yaml

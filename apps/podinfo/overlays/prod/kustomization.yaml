@@ -3,7 +3,7 @@ namespace: prod
 resources:
   - ../../base
   - ingress.yaml
-  - postgres_stateful.yaml
+  - db_stateful.yaml
   - sealedsecret-prod.yaml
 patchesStrategicMerge:
   - patch-replicas.yaml
