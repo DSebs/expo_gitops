@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: springboot-ingress
+  name: app-ingress
   namespace: qa
   annotations:
     nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8"
@@ -14,6 +14,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: springapp
+                name: backend-service
                 port:
                   number: 80

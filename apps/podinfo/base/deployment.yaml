@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: springboot-app
+  name: backend
   labels:
-    app: springboot-app
+    app: backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: springboot-app
+      app: backend
   template:
     metadata:
       labels:
-        app: springboot-app
+        app: backend
     spec:
       containers:
-        - name: springboot-app
-          image: scard1/servidor3dae:latest   
+        - name: backend
+          image: scard1/servidor3dae:latest
           ports:
-            - containerPort: 8090        
+            - containerPort: 8090
           env:
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://postgres:5432/paquetesdb"
+              value: "jdbc:postgresql://db:5432/paquetesdb"
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:

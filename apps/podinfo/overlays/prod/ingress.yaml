@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: springboot-ingress
+  name: app-ingress
   namespace: prod
 spec:
   rules:
@@ -12,6 +12,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: springapp
+                name: backend-service
                 port:
                   number: 80

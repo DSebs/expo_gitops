@@ -1,27 +1,25 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgres
+  name: db
   namespace: prod
 spec:
-  serviceName: "postgres"
+  serviceName: "db"
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: db
   template:
     metadata:
       labels:
-        app: postgres
+        app: db
     spec:
       containers:
-        - name: postgres
-          image: postgres:15
+        - name: db
+          image: postgres:14.1
           ports:
             - containerPort: 5432
           env:
-            - name: POSTGRES_DB
-              value: "paquetesdb"
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -32,14 +30,16 @@ spec:
                 secretKeyRef:
                   name: db-credentials
                   key: password
+            - name: POSTGRES_DB
+              value: paquetesdb
           volumeMounts:
-            - name: postgres-data
+            - name: db-storage
               mountPath: /var/lib/postgresql/data
   volumeClaimTemplates:
     - metadata:
-        name: postgres-data
+        name: db-storage
       spec:
-        accessModes: [ "ReadWriteOnce" ]
+        accessModes: ["ReadWriteOnce"]
         resources:
           requests:
             storage: 1Gi
@@ -47,10 +47,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: db
   namespace: prod
 spec:
   ports:
     - port: 5432
   selector:
-    app: postgres
+    app: db

@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgres
+  name: db
   namespace: dev
 spec:
-  serviceName: "postgres"
+  serviceName: "db"
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: db
   template:
     metadata:
       labels:
-        app: postgres
+        app: db
     spec:
       containers:
-        - name: postgres
+        - name: db
           image: postgres:14.1
           ports:
             - containerPort: 5432
@@ -33,11 +33,11 @@ spec:
             - name: POSTGRES_DB
               value: paquetesdb
           volumeMounts:
-            - name: postgres-storage
+            - name: db-storage
               mountPath: /var/lib/postgresql/data
   volumeClaimTemplates:
     - metadata:
-        name: postgres-storage
+        name: db-storage
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
@@ -47,10 +47,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: db
   namespace: dev
 spec:
   ports:
     - port: 5432
   selector:
-    app: postgres
+    app: db
