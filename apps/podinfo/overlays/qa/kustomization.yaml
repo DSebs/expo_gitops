@@ -5,5 +5,5 @@ resources:
   - ingress.yaml
   - postgres_stateful.yaml
   - sealedsecret-qa.yaml
-patches:
+patchesStrategicMerge:
   - patch-replicas.yaml
