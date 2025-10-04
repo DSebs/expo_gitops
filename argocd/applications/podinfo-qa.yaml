@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/DSebs/prueba_argo
-    targetRevision: qa
+    targetRevision: main
     path: apps/podinfo/overlays/qa
   destination:
     server: https://kubernetes.default.svc

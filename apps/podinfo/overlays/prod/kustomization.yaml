@@ -1,5 +1,9 @@
+
 namespace: prod
-bases:
+resources:
   - ../../base
-patchesStrategicMerge:
+  - ingress.yaml
+  - postgres_stateful.yaml
+  - sealedsecret-prod.yaml
+patches:
   - patch-replicas.yaml
