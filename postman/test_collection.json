@@ -1,0 +1,21 @@
+{
+  "info": {
+    "name": "Backend Tests"
+  },
+  "item": [
+    {
+      "name": "Health Packages",
+      "request": {
+        "method": "GET",
+        "url": "http://springapp.local/api/packages/health"
+      }
+    },
+    {
+      "name": "Health Guides",
+      "request": {
+        "method": "GET",
+        "url": "http://springapp.local/api/guides/health"
+      }
+    }
+  ]
+}
