@@ -82,8 +82,8 @@ pipeline {
                   ${JMETER_HOME}/bin/jmeter -n -t jmeter/tests/backend_smoke.jmx -l jmeter/results/results.jtl -JminikubeIp=${MINIKUBE_IP} -f
                   echo "Generando reporte HTML..."
                   REPORT_DIR=\"jmeter/results/html-${BUILD_NUMBER}\"
-                  rm -rf \"${REPORT_DIR}\" || true
-                  ${JMETER_HOME}/bin/jmeter -g jmeter/results/results.jtl -o \"${REPORT_DIR}\"
+                  rm -rf \"\$REPORT_DIR\" || true
+                  ${JMETER_HOME}/bin/jmeter -g jmeter/results/results.jtl -o \"\$REPORT_DIR\"
                 """
                 archiveArtifacts artifacts: 'jmeter/results/results.jtl', fingerprint: true
                 archiveArtifacts artifacts: "jmeter/results/html-${env.BUILD_NUMBER}/**", fingerprint: true
