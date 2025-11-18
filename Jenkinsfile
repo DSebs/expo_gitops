@@ -91,21 +91,34 @@ pipeline {
         }
 
         stage('UI Functional Tests') {
+            when {
+                expression { return sh(script: "docker info >/dev/null 2>&1 && echo ok || echo no", returnStdout: true).trim() == "ok" }
+            }
             steps {
                 sh """
                   set -e
                   echo "Levantando Selenium Standalone Chrome..."
                   docker rm -f selenium-standalone || true
+                  docker pull selenium/standalone-chrome:latest
                   docker run -d --name selenium-standalone -p 4444:4444 --add-host springapp.local:${MINIKUBE_IP} selenium/standalone-chrome:latest
                   echo "Esperando a que Selenium esté listo..."
-                  for i in {1..30}; do
-                    if curl -fsS http://localhost:4444/status >/dev/null; then echo "Selenium listo"; break; fi
+                  READY=0
+                  for i in $(seq 1 60); do
+                    RESP=$(curl -fsS http://localhost:4444/status || true)
+                    echo "Intento $i: $RESP" || true
+                    echo "$RESP" | grep -q '\\\"ready\\\"[[:space:]]*:[[:space:]]*true' && READY=1 && break
                     sleep 2
                   done
+                  if [ "$READY" -ne 1 ]; then
+                    echo "Selenium no estuvo listo a tiempo"
+                    docker logs selenium-standalone || true
+                    exit 1
+                  fi
                   echo "Ejecutando pruebas Selenium..."
+                  docker pull node:18-bullseye
                   docker run --rm --network host -e BASE_URL=http://springapp.local -v "$PWD/tests/selenium":/tests -w /tests node:18-bullseye bash -lc "
                     set -e
-                    npm ci
+                    npm install --no-audit --no-fund
                     node test_guides.js
                   "
                   echo "Apagando Selenium..."

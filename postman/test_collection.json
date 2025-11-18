@@ -337,10 +337,10 @@
           "protocol": "http",
           "host": ["{{minikubeIp}}"],
           "path": ["api", "packages", "getByName", "{{packageName}}"]
-        }
-      },
+      }
+    },
       "event": [
-        {
+    {
           "listen": "test",
           "script": {
             "exec": [
