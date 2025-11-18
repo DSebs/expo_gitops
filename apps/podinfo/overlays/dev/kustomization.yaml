@@ -4,6 +4,8 @@ resources:
   - ingress.yaml
   - db_stateful.yaml
   - sealedsecret.yaml  
+  - frontend-deployment.yaml
+  - frontend-service.yaml
 patchesStrategicMerge:
   - patch-replicas.yaml
 

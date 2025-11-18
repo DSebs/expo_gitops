@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: scard1/servidor3dae:latest
+          image: scard1/empresariales3-servidor3dae:latest
           ports:
             - containerPort: 8090
           env:
