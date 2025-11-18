@@ -56,7 +56,7 @@ pipeline {
                 sh """
                     echo "Ejecutando pruebas Postman..."
                     newman run ${POSTMAN_COLLECTION} \
-                      --env-var baseUrl=http://${MINIKUBE_IP}
+                      --env-var minikubeIp=${MINIKUBE_IP}
                 """
             }
         }
