@@ -61,15 +61,42 @@ pipeline {
             }
         }
 
+        stage('Non-Functional Tests (JMeter)') {
+            environment {
+                JMETER_VERSION = "5.6.3"
+                JMETER_HOME = "tools/apache-jmeter-${JMETER_VERSION}"
+            }
+            steps {
+                sh """
+                  set -e
+                  echo "Descargando Apache JMeter ${JMETER_VERSION} si no está presente..."
+                  mkdir -p tools
+                  if [ ! -d "${JMETER_HOME}" ]; then
+                    curl -fsSL https://downloads.apache.org/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz -o tools/jmeter.tgz
+                    tar -xzf tools/jmeter.tgz -C tools
+                  fi
+                  echo "Ejecutando pruebas JMeter (smoke)..."
+                  mkdir -p jmeter/results
+                  ${JMETER_HOME}/bin/jmeter -n -t jmeter/tests/backend_smoke.jmx -l jmeter/results/results.jtl -JminikubeIp=${MINIKUBE_IP}
+                  echo "Generando reporte HTML..."
+                  ${JMETER_HOME}/bin/jmeter -g jmeter/results/results.jtl -o jmeter/results/html
+                """
+                archiveArtifacts artifacts: 'jmeter/results/results.jtl', fingerprint: true
+                archiveArtifacts artifacts: 'jmeter/results/html/**', fingerprint: true
+            }
+        }
+
+        stage('Destroy Environments') {
+            steps {
+                sh """
+                    echo "Destruyendo entornos..."
+                    kubectl delete -f argocd/applications/ -n ${ARGO_NS} --ignore-not-found=true
+                """
+            }
+        }
+
     }
 
     post {
-        always {
-            echo "Destruyendo entornos..."
-
-            sh """
-                kubectl delete -f argocd/applications/ -n ${ARGO_NS} --ignore-not-found=true
-            """
-        }
     }
 }
