@@ -79,7 +79,7 @@ pipeline {
                   mkdir -p jmeter/results
                   # limpiar resultado previo si existe para evitar conflictos
                   rm -f jmeter/results/results.jtl || true
-                  ${JMETER_HOME}/bin/jmeter -n -t jmeter/tests/backend_smoke.jmx -l jmeter/results/results.jtl -JminikubeIp=${MINIKUBE_IP} -f
+                  ${JMETER_HOME}/bin/jmeter -n -t jmeter/tests/backend_smoke.jmx -l jmeter/results/results.jtl -JminikubeIp=\${MINIKUBE_IP} -f
                   echo "Generando reporte HTML..."
                   REPORT_DIR=\"jmeter/results/html-${BUILD_NUMBER}\"
                   rm -rf \"\$REPORT_DIR\" || true
@@ -100,7 +100,7 @@ pipeline {
                   echo "Levantando Selenium Standalone Chrome..."
                   docker rm -f selenium-standalone || true
                   docker pull selenium/standalone-chrome:latest
-                  docker run -d --name selenium-standalone -p 4444:4444 --add-host springapp.local:${MINIKUBE_IP} selenium/standalone-chrome:latest
+                  docker run -d --name selenium-standalone -p 4444:4444 --add-host springapp.local:\${MINIKUBE_IP} selenium/standalone-chrome:latest
                   echo "Esperando a que Selenium esté listo..."
                   READY=0
                   for i in $(seq 1 60); do
