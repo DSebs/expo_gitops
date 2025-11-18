@@ -10,13 +10,13 @@ pipeline {
 
     stages {
 
-        stage('Checkout CI/CD Repo') {
+        stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Deploy Infra with ArgoCD Applications') {
+        stage('Deploy Infrastructure') {
             steps {
                 sh """
                     echo "Aplicando Applications en ArgoCD..."
@@ -25,7 +25,7 @@ pipeline {
             }
         }
 
-        stage('Wait for ArgoCD Sync') {
+        stage('Wait for Synchronization') {
             steps {
                 script {
                     sh """
@@ -41,7 +41,7 @@ pipeline {
             }
         }
 
-        stage('Wait for Pods Ready') {
+        stage('Wait for Readiness') {
             steps {
                 sh """
                   echo "Esperando a que los pods estén corriendo..."
@@ -51,7 +51,7 @@ pipeline {
             }
         }
 
-        stage('Run Postman Tests') {
+        stage('Functional API Tests') {
             steps {
                 sh """
                     echo "Ejecutando pruebas Postman..."
@@ -61,7 +61,7 @@ pipeline {
             }
         }
 
-        stage('Non-Functional Tests (JMeter)') {
+        stage('Performance Tests') {
             environment {
                 JMETER_VERSION = "5.6.3"
                 JMETER_HOME = "tools/apache-jmeter-${JMETER_VERSION}"
@@ -86,7 +86,31 @@ pipeline {
             }
         }
 
-        stage('Destroy Environments') {
+        stage('UI Functional Tests') {
+            steps {
+                sh """
+                  set -e
+                  echo "Levantando Selenium Standalone Chrome..."
+                  docker rm -f selenium-standalone || true
+                  docker run -d --name selenium-standalone -p 4444:4444 --add-host springapp.local:${MINIKUBE_IP} selenium/standalone-chrome:latest
+                  echo "Esperando a que Selenium esté listo..."
+                  for i in {1..30}; do
+                    if curl -fsS http://localhost:4444/status >/dev/null; then echo "Selenium listo"; break; fi
+                    sleep 2
+                  done
+                  echo "Ejecutando pruebas Selenium..."
+                  docker run --rm --network host -e BASE_URL=http://springapp.local -v "$PWD/tests/selenium":/tests -w /tests node:18-bullseye bash -lc "
+                    set -e
+                    npm ci
+                    node test_guides.js
+                  "
+                  echo "Apagando Selenium..."
+                  docker rm -f selenium-standalone || true
+                """
+            }
+        }
+
+        stage('Teardown') {
             steps {
                 sh """
                     echo "Destruyendo entornos..."

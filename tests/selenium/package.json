@@ -1,0 +1,10 @@
+{
+  "name": "selenium-tests",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "selenium-webdriver": "^4.24.0"
+  }
+}
+
+
