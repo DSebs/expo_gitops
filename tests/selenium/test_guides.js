@@ -1,6 +1,7 @@
 const { Builder, By, until, Key } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const fs = require('fs');
+const path = require('path');
 
 async function run() {
   const baseUrl = process.env.BASE_URL || 'http://springapp.local';
@@ -9,6 +10,8 @@ async function run() {
 
   async function buildDriverWithRetry(maxAttempts = 3) {
     const options = new chrome.Options();
+    // Estabilidad en CI y entornos virtual display
+    options.addArguments('--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--window-size=1920,1080');
     // Mostrar el navegador para demo local por defecto; usar HEADLESS=true para CI
     if ((process.env.HEADLESS || '').toLowerCase() === 'true') {
       options.addArguments('--headless=new', '--no-sandbox', '--disable-dev-shm-usage');
@@ -42,6 +45,15 @@ async function run() {
 
   const driver = await buildDriverWithRetry(3);
   await driver.manage().setTimeouts({ script: 30000 });
+
+  async function saveScreenshot(name) {
+    try {
+      const dir = path.join(process.cwd(), 'screenshots');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const data = await driver.takeScreenshot();
+      fs.writeFileSync(path.join(dir, `${Date.now()}-${name}.png`), data, 'base64');
+    } catch (_) {}
+  }
 
   const clickButtonByText = async (text, timeoutMs = 10000) => {
     const locator = By.xpath(`//button[normalize-space(text())='${text}']`);
@@ -82,16 +94,19 @@ async function run() {
     // Cargar la app
     await driver.get(baseUrl + '/');
     await driver.sleep(1000);
+    await saveScreenshot('home');
 
     // Ir a sección "Guia"
     await clickButtonByText('Guia');
     await driver.sleep(1000);
+    await saveScreenshot('guia-section');
 
     // Pre-clean via UI (Eliminar Guía si existe)
     await clickButtonByText('Eliminar');
     await typeInInputByPlaceholder('ID de la guía', String(guideId));
     await clickButtonByText('Buscar Guía');
-    await driver.sleep(4000);
+    await driver.sleep(1000);
+    await saveScreenshot('preclean-search');
     // Si aparece botón Eliminar, procede; si no, continúa
     try {
       await clickButtonByText('Eliminar', 2000);
@@ -133,7 +148,8 @@ await driver.executeScript(
   dateInput, '1995-11-15'
 );
 await dateInput.sendKeys(Key.TAB);
-await driver.sleep(5000);
+await driver.sleep(500);
+await saveScreenshot('form-filled');
 
 // Crear por API para evitar errores de formateo en el handler de la UI
 let payload = {
@@ -211,14 +227,16 @@ try {
 }
 if (!verifiedSearch) throw new Error('No fue posible verificar la guía buscada por ID en la UI');
 // Pausa breve para demostrar el resultado de la búsqueda en pantalla
-await driver.sleep(4000);
+await driver.sleep(1200);
+await saveScreenshot('search-by-id');
 
     // Eliminar guía vía UI (scoped al contenedor de eliminación)
     await clickButtonByText('Eliminar');
     await typeInInputByPlaceholder('ID de la guía', String(guideId));
     await clickButtonByText('Buscar Guía');
     // Pausa para visualizar la ficha encontrada antes de eliminar
-    await driver.sleep(2000);
+    await driver.sleep(1200);
+    await saveScreenshot('pre-delete-card');
     // Esperar a que se renderice la sección con los datos y el botón eliminar
     const eliminarTitle = By.xpath("//h2[contains(@class,'buscar-title') and normalize-space(.)='Eliminar Guía']");
     const eliminarTitleEl = await driver.wait(until.elementLocated(eliminarTitle), 10000);
@@ -238,7 +256,8 @@ await driver.sleep(4000);
         await alert.accept();
       } catch (_) {}
       // Pausa breve para visualizar el estado post-eliminación
-      await driver.sleep(2000);
+      await driver.sleep(1200);
+      await saveScreenshot('post-delete');
     } catch (_) {
       // Si no aparece el bloque de datos, intenta fallback global al botón Eliminar (menos preferible)
       await clickButtonByText('Eliminar');
@@ -247,13 +266,15 @@ await driver.sleep(4000);
         const alert = await driver.switchTo().alert();
         await alert.accept();
       } catch (_) {}
-      await driver.sleep(2000);
+      await driver.sleep(1200);
+      await saveScreenshot('post-delete-fallback');
     }
     // Verificación post-eliminación: repetir búsqueda y esperar “Guía no encontrada” (alert) o ausencia del bloque de datos
     await typeInInputByPlaceholder('ID de la guía', String(guideId));
     await clickButtonByText('Buscar Guía');
     // Pausa para visualizar la segunda búsqueda
     await driver.sleep(1200);
+    await saveScreenshot('search-after-delete');
     let deletionVerified = false;
     try {
       await driver.wait(until.alertIsPresent(), 4000);

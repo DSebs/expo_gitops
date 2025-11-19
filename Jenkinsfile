@@ -102,15 +102,18 @@ pipeline {
                   # Ejecutar pruebas
                   cd tests/selenium
                   npm install --no-audit --no-fund
-                  # Detectar binario de Chrome/Chromium para modo headless en agentes CI
+                  # Detectar binario de Chrome/Chromium
                   CHROME_BIN_PATH="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
                   if [ -z "$CHROME_BIN_PATH" ]; then
                     echo "No se encontró google-chrome/chromium en el agente. Instálalo o define CHROME_BIN."
                     exit 1
                   fi
                   echo "Usando navegador: $CHROME_BIN_PATH"
-                  HEADLESS=true CHROME_BIN="$CHROME_BIN_PATH" BASE_URL=http://springapp.local SELENIUM_REMOTE_URL= node test_guides.js
+                  rm -rf screenshots && mkdir -p screenshots
+                  # Ejecutar en servidor X virtual para poder abrir ventana visible en CI y capturar screenshots
+                  xvfb-run -a -s "-screen 0 1920x1080x24" bash -lc 'HEADLESS=false CHROME_BIN="$CHROME_BIN_PATH" BASE_URL=http://springapp.local SELENIUM_REMOTE_URL= node test_guides.js'
                 '''
+                archiveArtifacts artifacts: 'tests/selenium/screenshots/**', fingerprint: true, onlyIfSuccessful: false
             }
         }
 
