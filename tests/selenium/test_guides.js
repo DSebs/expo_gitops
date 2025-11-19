@@ -1,14 +1,32 @@
 const { Builder, By, until } = require('selenium-webdriver');
+const chrome = require('selenium-webdriver/chrome');
 
 async function run() {
   const baseUrl = process.env.BASE_URL || 'http://springapp.local';
   const guideId = Number(process.env.GUIDE_ID || `${Math.floor(Math.random() * 90000) + 10000}`);
   const guideName = process.env.GUIDE_NAME || 'Marcos';
 
-  const driver = await new Builder()
-    .usingServer('http://localhost:4444/wd/hub')
-    .forBrowser('chrome')
-    .build();
+  async function buildDriverWithRetry(maxAttempts = 3) {
+    const options = new chrome.Options()
+      .addArguments('--headless=new', '--no-sandbox', '--disable-dev-shm-usage');
+    let lastErr;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const drv = await new Builder()
+          .usingServer('http://localhost:4444/wd/hub')
+          .forBrowser('chrome')
+          .setChromeOptions(options)
+          .build();
+        return drv;
+      } catch (e) {
+        lastErr = e;
+        await new Promise(r => setTimeout(r, 2000 * attempt));
+      }
+    }
+    throw lastErr;
+  }
+
+  const driver = await buildDriverWithRetry(3);
 
   const execFetch = async (method, path, body) => {
     const script = `
@@ -33,7 +51,7 @@ async function run() {
   try {
     // Cargar la app (para establecer contexto y cookies si aplica)
     await driver.get(baseUrl + '/');
-    await driver.wait(async () => true, 1000);
+    await driver.sleep(500);
 
     // Cleanup previo
     const delPre = await execFetch('DELETE', `/api/guides/delete/${guideId}`);

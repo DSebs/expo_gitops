@@ -100,7 +100,7 @@ pipeline {
                   echo "Levantando Selenium Standalone Chrome..."
                   docker rm -f selenium-standalone || true
                   docker pull selenium/standalone-chrome:latest
-                  docker run -d --name selenium-standalone -p 4444:4444 --add-host springapp.local:${MINIKUBE_IP} selenium/standalone-chrome:latest
+                  docker run -d --name selenium-standalone --shm-size=2g -p 4444:4444 --add-host springapp.local:${MINIKUBE_IP} selenium/standalone-chrome:latest
                   echo "Esperando a que Selenium esté listo..."
                   READY=0
                   for i in $(seq 1 60); do
@@ -114,6 +114,8 @@ pipeline {
                     docker logs selenium-standalone || true
                     exit 1
                   fi
+                  # pequeño buffer extra para que los servicios internos arranquen del todo
+                  sleep 3
                   echo "Ejecutando pruebas Selenium..."
                   docker pull node:18-bullseye
                   docker run --rm --network host -e BASE_URL=http://springapp.local -v "$PWD/tests/selenium":/tests -w /tests node:18-bullseye bash -lc 'set -e; npm install --no-audit --no-fund; node test_guides.js'
