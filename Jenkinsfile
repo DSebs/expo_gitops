@@ -110,8 +110,14 @@ pipeline {
                   fi
                   echo "Usando navegador: $CHROME_BIN_PATH"
                   rm -rf screenshots && mkdir -p screenshots
-                  # Ejecutar en servidor X virtual para poder abrir ventana visible en CI y capturar screenshots
-                  xvfb-run -a -s "-screen 0 1920x1080x24" bash -lc 'HEADLESS=false CHROME_BIN="$CHROME_BIN_PATH" BASE_URL=http://springapp.local SELENIUM_REMOTE_URL= node test_guides.js'
+                  # Si existe xvfb-run, ejecuta con display virtual visible; si no, ejecuta en headless pero generando screenshots igualmente
+                  if command -v xvfb-run >/dev/null 2>&1; then
+                    echo "Ejecutando con Xvfb (display virtual visible)..."
+                    xvfb-run -a -s "-screen 0 1920x1080x24" bash -lc 'HEADLESS=false CHROME_BIN="$CHROME_BIN_PATH" BASE_URL=http://springapp.local SELENIUM_REMOTE_URL= node test_guides.js'
+                  else
+                    echo "xvfb-run no disponible; ejecutando en modo headless (capturas igualmente habilitadas)..."
+                    HEADLESS=true CHROME_BIN="$CHROME_BIN_PATH" BASE_URL=http://springapp.local SELENIUM_REMOTE_URL= node test_guides.js
+                  fi
                 '''
                 archiveArtifacts artifacts: 'tests/selenium/screenshots/**', fingerprint: true, onlyIfSuccessful: false
             }
