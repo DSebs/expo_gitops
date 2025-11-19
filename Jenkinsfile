@@ -102,7 +102,14 @@ pipeline {
                   # Ejecutar pruebas
                   cd tests/selenium
                   npm install --no-audit --no-fund
-                  BASE_URL=http://springapp.local SELENIUM_REMOTE_URL= node test_guides.js
+                  # Detectar binario de Chrome/Chromium para modo headless en agentes CI
+                  CHROME_BIN_PATH="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+                  if [ -z "$CHROME_BIN_PATH" ]; then
+                    echo "No se encontró google-chrome/chromium en el agente. Instálalo o define CHROME_BIN."
+                    exit 1
+                  fi
+                  echo "Usando navegador: $CHROME_BIN_PATH"
+                  HEADLESS=true CHROME_BIN="$CHROME_BIN_PATH" BASE_URL=http://springapp.local SELENIUM_REMOTE_URL= node test_guides.js
                 '''
             }
         }
