@@ -12,11 +12,12 @@ async function run() {
     let lastErr;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        const drv = await new Builder()
-          .usingServer('http://localhost:4444/wd/hub')
-          .forBrowser('chrome')
-          .setChromeOptions(options)
-          .build();
+        let builder = new Builder().forBrowser('chrome').setChromeOptions(options);
+        const remoteUrl = process.env.SELENIUM_REMOTE_URL;
+        if (remoteUrl && remoteUrl.trim().length > 0) {
+          builder = builder.usingServer(remoteUrl);
+        }
+        const drv = await builder.build();
         return drv;
       } catch (e) {
         lastErr = e;
