@@ -68,8 +68,13 @@ pipeline {
             steps {
                 sh '''
                     echo "Ejecutando pruebas Postman..."
+                    # Resolver IP de minikube en tiempo de ejecución
+                    MKIP=$(minikube ip || echo "$MINIKUBE_IP")
+                    echo "Usando MINIKUBE_IP=${MKIP}"
+                    echo "Health check previo vía Ingress..."
+                    curl -sS -i -H 'Host: springapp.local' http://$MKIP/api/guides/health | head -n 10 || true
                     newman run $POSTMAN_COLLECTION \
-                      --env-var minikubeIp=$MINIKUBE_IP
+                      --env-var minikubeIp=$MKIP
                 '''
             }
         }
