@@ -20,6 +20,19 @@ pipeline {
             steps {
                 sh '''
                     echo "Aplicando Applications en ArgoCD..."
+                    # Resolver IP actual de Minikube (evitar valores estáticos)
+                    MINIKUBE_IP=$(minikube ip || true)
+                    echo "MINIKUBE_IP=${MINIKUBE_IP}"
+                    if [ -z "$MINIKUBE_IP" ]; then
+                      echo "Minikube no responde. Intenta iniciar o verificar el nodo del agente."
+                      exit 1
+                    fi
+                    # Asegurar kube-context apuntando al API server correcto
+                    kubectl config set-cluster minikube --server="https://${MINIKUBE_IP}:8443" >/dev/null 2>&1 || true
+                    kubectl config use-context minikube >/dev/null 2>&1 || true
+                    # Crear namespace de ArgoCD si no existe
+                    kubectl get ns $ARGO_NS >/dev/null 2>&1 || kubectl create ns $ARGO_NS
+                    # Aplicar manifests
                     kubectl apply -f argocd/applications/ -n $ARGO_NS
                 '''
             }
