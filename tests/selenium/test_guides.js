@@ -44,7 +44,7 @@ async function run() {
   }
 
   const driver = await buildDriverWithRetry(3);
-  await driver.manage().setTimeouts({ script: 60000, pageLoad: 60000, implicit: 0 });
+  // Usar timeouts por defecto del WebDriver (sin overrides explícitos)
 
   async function saveScreenshot(name) {
     try {
