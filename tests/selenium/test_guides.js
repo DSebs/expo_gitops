@@ -44,7 +44,7 @@ async function run() {
   }
 
   const driver = await buildDriverWithRetry(3);
-  await driver.manage().setTimeouts({ script: 30000 });
+  await driver.manage().setTimeouts({ script: 60000, pageLoad: 60000, implicit: 0 });
 
   async function saveScreenshot(name) {
     try {
@@ -93,19 +93,19 @@ async function run() {
   try {
     // Cargar la app
     await driver.get(baseUrl + '/');
-    await driver.sleep(1000);
+    await driver.sleep(1500);
     await saveScreenshot('home');
 
     // Ir a sección "Guia"
     await clickButtonByText('Guia');
-    await driver.sleep(1000);
+    await driver.sleep(1500);
     await saveScreenshot('guia-section');
 
     // Pre-clean via UI (Eliminar Guía si existe)
     await clickButtonByText('Eliminar');
     await typeInInputByPlaceholder('ID de la guía', String(guideId));
     await clickButtonByText('Buscar Guía');
-    await driver.sleep(1000);
+    await driver.sleep(2000);
     await saveScreenshot('preclean-search');
     // Si aparece botón Eliminar, procede; si no, continúa
     try {
@@ -148,7 +148,7 @@ await driver.executeScript(
   dateInput, '1995-11-15'
 );
 await dateInput.sendKeys(Key.TAB);
-await driver.sleep(500);
+await driver.sleep(1500);
 await saveScreenshot('form-filled');
 
 // Crear por API para evitar errores de formateo en el handler de la UI
@@ -227,7 +227,7 @@ try {
 }
 if (!verifiedSearch) throw new Error('No fue posible verificar la guía buscada por ID en la UI');
 // Pausa breve para demostrar el resultado de la búsqueda en pantalla
-await driver.sleep(1200);
+await driver.sleep(2000);
 await saveScreenshot('search-by-id');
 
     // Eliminar guía vía UI (scoped al contenedor de eliminación)
@@ -235,7 +235,7 @@ await saveScreenshot('search-by-id');
     await typeInInputByPlaceholder('ID de la guía', String(guideId));
     await clickButtonByText('Buscar Guía');
     // Pausa para visualizar la ficha encontrada antes de eliminar
-    await driver.sleep(1200);
+    await driver.sleep(2000);
     await saveScreenshot('pre-delete-card');
     // Esperar a que se renderice la sección con los datos y el botón eliminar
     const eliminarTitle = By.xpath("//h2[contains(@class,'buscar-title') and normalize-space(.)='Eliminar Guía']");
@@ -256,7 +256,7 @@ await saveScreenshot('search-by-id');
         await alert.accept();
       } catch (_) {}
       // Pausa breve para visualizar el estado post-eliminación
-      await driver.sleep(1200);
+      await driver.sleep(2000);
       await saveScreenshot('post-delete');
     } catch (_) {
       // Si no aparece el bloque de datos, intenta fallback global al botón Eliminar (menos preferible)
@@ -266,14 +266,14 @@ await saveScreenshot('search-by-id');
         const alert = await driver.switchTo().alert();
         await alert.accept();
       } catch (_) {}
-      await driver.sleep(1200);
+      await driver.sleep(2000);
       await saveScreenshot('post-delete-fallback');
     }
     // Verificación post-eliminación: repetir búsqueda y esperar “Guía no encontrada” (alert) o ausencia del bloque de datos
     await typeInInputByPlaceholder('ID de la guía', String(guideId));
     await clickButtonByText('Buscar Guía');
     // Pausa para visualizar la segunda búsqueda
-    await driver.sleep(1200);
+    await driver.sleep(2000);
     await saveScreenshot('search-after-delete');
     let deletionVerified = false;
     try {

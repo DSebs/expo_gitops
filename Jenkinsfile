@@ -87,6 +87,20 @@ pipeline {
                 '''
                 archiveArtifacts artifacts: 'jmeter/results/results.jtl', fingerprint: true
                 archiveArtifacts artifacts: "jmeter/results/html-${env.BUILD_NUMBER}/**", fingerprint: true
+                script {
+                  try {
+                    publishHTML target: [
+                      reportDir: "jmeter/results/html-${env.BUILD_NUMBER}",
+                      reportFiles: 'index.html',
+                      reportName: 'JMeter Report',
+                      keepAll: true,
+                      alwaysLinkToLastBuild: true,
+                      allowMissing: false
+                    ]
+                  } catch (err) {
+                    echo "publishHTML no disponible o plugin ausente: ${err}"
+                  }
+                }
             }
         }
 
